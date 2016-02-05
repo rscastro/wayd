@@ -25,6 +25,11 @@ var API_KEY_GOOGLE = require('../../apikeys').google_api_key;
 
 
 const Search = React.createClass({
+  getInitialState: function(){
+    return {
+      richard: 0
+    }
+  },
   //changes redux.state.date
   onDateChange: function(date){
     // console.log('datechange', JSON.stringify(date))
@@ -33,7 +38,9 @@ const Search = React.createClass({
 
   eventRecView: function() {
     // console.log('eventrectview', this.props)
-    var message = {
+    console.log(this.props.searchButton, 'VALUE OF SEARCHBUTTON')
+    if(this.props.searchButton){
+      var message = {
       latlng: this.props.latlng,
       date: this.props.date
     }
@@ -44,6 +51,20 @@ const Search = React.createClass({
       title: 'Event',
       component: EventRec
     });
+    }
+    else{
+
+    }
+    
+
+  },
+
+  componentWillMount: function(){
+    navigator.geolocation.getCurrentPosition(
+                (initialPosition) => {this.props.latlngadd(initialPosition.coords.latitude,initialPosition.coords.longitude); console.log('GETTING CURRENT POSITION: ', initialPosition)}, // success callback
+                (error) => console.log('ERROR CURRENT POSITION', error), // failure callback
+                {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000} // options
+                );
 
   },
 
@@ -56,6 +77,7 @@ const Search = React.createClass({
     //   console.log(error)
     // })
    console.log('search mounted...');
+
    
 
   },
@@ -65,6 +87,28 @@ const Search = React.createClass({
       value: 'today',
       // active: false
     }
+  },
+
+  wayd: function(text){
+    if(text !== 'Current location'){
+      this.props.searchDisabled(false);
+      console.log('not curent location')
+    }
+    else{
+      console.log('current location activated')
+      this.props.searchDisabled(true);
+      navigator.geolocation.getCurrentPosition(
+                (initialPosition) => {this.props.latlngadd(initialPosition.coords.latitude,initialPosition.coords.longitude);
+                 console.log('GETTING CURRENT POSITION: ', initialPosition)}, // success callback
+                (error) => console.log('ERROR CURRENT POSITION', error), // failure callback
+                {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000} // options
+                );
+      
+    }
+   
+
+    
+
   },
 
   showDatePicker: function() {
@@ -84,14 +128,19 @@ const Search = React.createClass({
           placeholder='Where you at, homie?'
           minLength={2} // minimum length of text to search
           autoFocus={false}
+          onChangeText={this.functionTest}
           enablePoweredByContainer={false}
           fetchDetails={true}
           onPress={(data, details) => { // 'details' is provided when fetchDetails = true
           console.log('STUFF HAPPENING')
             var lat = details.geometry.location.lat;
             var lng = details.geometry.location.lng;
+            this.props.searchDisabled(true)
+
             this.props.latlngadd(lat,lng);
+            
           }}
+          wayd = {this.wayd}
           getDefaultValue={() => {
             return ''; // text input default value
           }}
@@ -156,16 +205,18 @@ const Search = React.createClass({
           date={this.props.date}
           // timeZoneOffsetInMinutes={(-1) * (new Date()).getTimezoneOffset()}
           mode="date" // changed from 'datetime'
-          onDateChange={this.onDateChange}>
+          onDateChange={this.onDateChange}
+          >
         </DatePickerIOS>
 
         <TouchableHighlight
           style={styles.button}
           onPress={this.eventRecView}
-          underlayColor = "tranparent">
+          underlayColor = "#6495ed">
           <Text style={styles.buttonText}> find an event </Text> 
         </TouchableHighlight>
-        
+
+      
         
 
       </View>
